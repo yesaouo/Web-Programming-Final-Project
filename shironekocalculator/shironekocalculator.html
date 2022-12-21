@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>白貓傷害計算機</title>
+    <link rel="shortcut icon" href="shironekocalculator.ico">
+    <style>
+        html, form{
+            height: 100%;
+        }
+        body {
+            height: 98%;
+            background-image: url("wp02_sp.png");
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+            background-size: cover;
+            display: flex;
+        }
+        input,select,textarea {
+            width: 100%;
+        }
+        textarea{height: 100px;}
+        td{text-align:center;}
+        .left,.middle,.right{width: 100%; min-width: 300px; overflow-y:scroll;}
+        .left,.right{background-color: rgba(255, 255, 255, 0.8);}
+        #block {
+            padding: 0 2.5%;
+            background:#a8dadc;
+        }
+        .row{
+            display: flex;
+        }
+        @media screen and (max-width: 640px){
+            .left,.right{display: none;}
+        }
+    </style>
+    <script>
+        function calculator() {
+            const form=document.forms['form'];
+            const skill1=form.skill1.value;
+            const skill2=form.skill2.value;
+            const skill3=form.skill3.value;
+            let ap=new Number(form.ap.value);
+            ap+=((skill1==1)?15:0)+((skill2==1)?20:0)+((skill3==1)?25:0)
+            +((skill1==7)?20:0)+((skill1==8)?25:0)+((skill1==9)?24:0)
+            +((skill2==6)?25:0)+((skill2==7)?27:0)+((skill3==9)?30:0);
+            let cp=new Number(form.cp.value);
+            cp+=((skill1==2)?10:0)+((skill2==2)?15:0)+((skill3==2)?20:0);
+            let cdp=new Number(form.cdp.value);
+            cdp+=((skill3==6)?25:0);
+            let ndp=new Number(form.ndp.value);
+            ndp+=((skill1==3)?25:0)+((skill2==3)?35:0)+((skill3==3)?50:0);
+            const sv4=((skill1==4)?100:0)+((skill2==4)?100:0)+((skill3==4)?200:0);
+            let sdp=new Number(form.sdp.value);
+            sdp+=((skill3==5)?40:0)+((skill1==5)?15:0)+((skill1==6)?20:0)+((skill2==5)?30:0)+((skill3==7)?30:0)+((skill3==8)?50:0);
+            const sv10=((skill3==10)?75:0);
+            let atk=form.atk.value*(1+ap/100);
+            let as=form.as.value*(1+cp/100);
+            let asr;if(as>5000)asr=0.8;
+            else if(as>1000)asr=0.55+(as-1000)/16000;
+            else if(as>500)asr=0.4+(as-500)/3333;
+            else if(as>300)asr=0.3+(as-300)/2000;
+            else asr=as/1000;
+            asr+=1;
+            let asd;if(as>8667)asd=1.8;
+            else if(as>6000)asd=1.64+(as-6000)/16667;
+            else if(as>1000)asd=0.94+(as-1000)/7143;
+            else if(as>200)asd=0.3+(as-200)/1250;
+            else asd=as/666;
+            asd+=cdp/100+1;
+            let ND=2*atk*(1+(ap+ndp+sv4+sv10)/100)*asd;
+            let SD=atk*(1+(sv4+sdp+sv10)/100)*asd;
+            alert("一般傷害:"+Math.round(ND)+"\n技能傷害:"+Math.round(SD));
+            const interval='-';
+            form.record.value+="\n一般傷害:"+Math.round(ND)+"\n技能傷害:"+Math.round(SD)+"\n";
+            form.record.scrollTop = form.record.scrollHeight;
+        }
+    
+        function Get(yourUrl){
+            var Httpreq = new XMLHttpRequest();
+            Httpreq.open("GET",yourUrl,false);
+            Httpreq.send(null);
+            return Httpreq.responseText;          
+        }
+        function Support(){
+            var json_obj = JSON.parse(Get('https://script.google.com/macros/s/AKfycbwOjxklOo7tXAP9VHWbcqdls7c3x7xgz4PbF_Ao13B4LkDU0onJgWag9O8mICjcxkVZ/exec'));
+            var str='<table class="wikitable"><tbody><tr><th width="20%">角色</th><th width="80%">自動技能</th></tr>';
+            for(var i=0;i<json_obj.length;i++){
+                str+=`<tr><td><img alt="${json_obj[i][0]}" src="${json_obj[i][1]}" width="70" height="70"><br>${json_obj[i][0]}</td><td><ul><li>${json_obj[i][2]}</li></ul></td></tr>`;
+            }
+            str+='</tbody></table>';
+            document.getElementById('support').innerHTML+=str;
+        }
+        function Auto(){
+            var json_obj = JSON.parse(Get('https://script.google.com/macros/s/AKfycbxWOwtzN6qh6M_l7xqLfutWeRcHtRHhEjIoGnDZm3EJpQGBlMxqKtd_NjvS6AOIdsSh/exec'));
+            var str='<table class="wikitable"><tbody><tr><th width="20%">角色</th><th width="80%">自動技能</th></tr>';
+            for(var i=0;i<json_obj.length;i++){
+                str+=`<tr><td><img alt="${json_obj[i][0]}" src="${json_obj[i][1]}" width="70" height="70"><br>${json_obj[i][0]}</td><td><ul><li>${json_obj[i][2]}</li></ul></td></tr>`;
+            }
+            str+='</tbody></table>';
+            document.getElementById('auto').innerHTML+=str;
+        }
+        function Start(){
+            Support();
+            Auto();
+        }
+        window.addEventListener("load",Start,false);
+    </script>
+</head>
+<body>
+<div class="left" id="support"></div>
+<form name="form" id="block" class="middle">
+    <h1><font color="white">白貓</font><font color="red">傷害</font>計算機</h1>
+    <h5>計算結果並非實際傷害，因省略了部分變數。如:職業加成、技能倍率</h5>
+    <h2><font color="orange">角色當前白值</font></h2>
+    <div class="row">
+        <input name="atk" placeholder="角色當前攻擊值" type="number" step="10" min="0">
+        <input name="as"  placeholder="角色當前會心值" type="number" step="10" min="0">
+    </div>
+    <h2><font color="orange">武器合成技能</font></h2>
+    <p><font color="#d94dff"><b>技能1 </b></font><select name="skill1">
+        <option >無以下效果</option>
+        <optgroup label="全職業">
+            <option value="1">攻擊+15%</option>
+            <option value="2">會心+10%</option>
+            <option value="3">一般攻擊的傷害+25%</option>
+            <option value="4">對○○系敵人的傷害+100%</option>
+        </optgroup>
+        <optgroup label="部分職業">
+            <option value="5">必殺技強化+15%</option>
+            <option value="6">必殺技強化+20%</option>
+            <option value="7">攻擊+20%</option>
+            <option value="8">攻擊+25%</option>
+            <option value="9">攻擊+24%</option>
+        </optgroup>
+    </select></p>
+    <p><font color="#d94dff"><b>技能2 </b></font><select name="skill2">
+        <option >無以下效果</option>
+        <optgroup label="全職業">
+            <option value="1">攻擊+20%</option>
+            <option value="2">會心+15%</option>
+            <option value="3">一般攻擊的傷害+35%</option>
+            <option value="4">對○○系敵人的傷害+100%</option>
+        </optgroup>
+        <optgroup label="部分職業">
+            <option value="5">必殺技強化+30%</option>
+            <option value="6">攻擊+25%</option>
+            <option value="7">攻擊+27%</option>
+        </optgroup>
+    </select></p>
+    <p><font color="#d94dff"><b>技能3 </b></font><select name="skill3">
+        <option >無以下效果</option>
+        <optgroup label="全職業">
+            <option value="1">攻擊+25%</option>
+            <option value="2">會心+20%</option>
+            <option value="6">會心傷害+25%</option>
+            <option value="5">消耗SP+10% ，必殺技強化+40%</option>
+            <option value="3">一般攻擊的傷害+50%</option>
+            <option value="4">對○○系敵人的傷害+200%</option>
+        </optgroup>
+        <optgroup label="部分職業">
+            <option value="7">必殺技強化+30%</option>
+            <option value="8">必殺技強化+50%</option>
+            <option value="9">攻擊+30%</option>
+            <option value="10">離敵人越遠，傷害提升幅度越大（最大75%）</option>
+        </optgroup>
+    </select></p>
+    <h2><font color="orange">額外效果加乘</font></h2>
+    <div class="row">
+        <input name="ap" placeholder="攻擊+X%" type="number" step="10" min="0">
+        <input name="cp" placeholder="會心+X%" type="number" step="10" min="0">
+        <input name="cdp" placeholder="會傷+X%" type="number" step="10" min="0">
+    </div>
+    <br>
+    <div class="row">
+        <input name="ndp" placeholder="普攻傷害+X%" type="number" step="10" min="0">
+        <input name="sdp" placeholder="技能傷害+X%" type="number" step="10" min="0">
+        <input name="submit" value="取得結果" type="button" onclick="calculator();">
+    </div>
+    <br><font color="#d94dff"><b>歷史紀錄:</b></font><br>
+    <textarea name="record" readonly></textarea>
+</form>
+<div class="right" id="auto"></div>
+
+</body>
+</html>
